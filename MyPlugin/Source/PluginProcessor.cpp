@@ -132,29 +132,33 @@ bool MyPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts)
 void MyPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
     ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+
+    //“ü—Íƒ`ƒƒƒ“ƒlƒ‹”‚ÌŠl“¾
+    auto totalNumInputChannels = getTotalNumInputChannels();
+    //o—Íƒ`ƒƒƒ“ƒlƒ‹”‚ÌŠl“¾
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
+    //Žg—p‚µ‚È‚¢ƒ`ƒƒƒ“ƒlƒ‹‚Ìƒoƒbƒtƒ@‚ðƒNƒŠƒA‚·‚éˆ—iŽg—p‚µ‚È‚¢ƒ`ƒƒƒ“ƒlƒ‹‚ÍInput‚æ‚è‚à‚Í‚Ýo‚½•ª‚ÌOutputj
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+        buffer.clear(i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    float level = 0.5f;     //‰¹—Ê‚ÌƒŒƒxƒ‹‚ð—\‚ß‰º‚°‚Ä‚¨‚­Ž–‚ð‘z’è‚µ‚Ä”{—¦‚ðÝ’è‚µ‚Ä‚¨‚­
 
-        // ..do something to the data...
+    //“ü—Íƒ`ƒƒƒ“ƒlƒ‹‚Ì”‚¾‚¯M†ˆ—‚ðŒJ‚è•Ô‚·B¡‰ñ‚Í“Á‚É‰½‚à‚µ‚È‚¢
+    for (int channel = 0; channel < totalNumInputChannels; ++channel) {
+        float* channelData = buffer.getWritePointer(channel);       //Žw’è‚µ‚½ƒ`ƒƒƒ“ƒlƒ‹‚Ìƒoƒbƒtƒ@‚Ìæ“ª‚ÌŽQÆ‚ð‚à‚ç‚Á‚Ä‚é
+    }
+
+    //o—Íƒ`ƒƒƒ“ƒlƒ‹‚Ì”‚¾‚¯M†ˆ—‚ðŒJ‚è•Ô‚·
+    for (int channel = 0; channel < totalNumOutputChannels; ++channel) {
+        //‘Î‰ž‚·‚éƒ`ƒƒƒ“ƒlƒ‹‚Ì1ƒ`ƒƒƒ“ƒlƒ‹•ª‚Ìƒoƒbƒtƒ@‚Ìæ“ªƒAƒhƒŒƒX‚ÌŠl“¾
+        float* channelData = buffer.getWritePointer(channel);
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
+            //Å‘åƒTƒ“ƒvƒ‹‚ÅˆêŽü‚·‚é—l‚ÉŠp“x‚ðŒvŽZ
+            const float currentAngle = juce::MathConstants<float>::pi * 2.0f * sample / buffer.getNumSamples();
+            //sin”g‚ÌŠÖ”‚ÉŒvŽZ‚µ‚½Šp“x‚ð“ü‚ê‚ÄA•Ô‚è’l‚ðfloat”z—ñ‚ÉŠi”[‚·‚é
+            channelData[sample] = sinf(currentAngle) * level;
+        }
     }
 }
 

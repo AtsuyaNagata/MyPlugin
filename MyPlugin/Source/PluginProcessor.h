@@ -30,7 +30,7 @@ public:
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
    #endif
 
-    //‚±‚±‚ÉAudio‚âMIDI‚Ìƒf[ƒ^‚ğ‰ÁH‚·‚éˆ—‚ğ‘‚­BƒGƒtƒFƒNƒg‚Ìê‡‚ÍAudioƒf[ƒ^AƒCƒ“ƒXƒgƒDƒ‹ƒƒ“ƒg‚ÍMIDIƒf[ƒ^‚ğó‚¯æ‚é
+    //â€šÂ±â€šÂ±â€šÃ‰Audioâ€šÃ¢MIDIâ€šÃŒÆ’f[Æ’^â€šÃ°â€°ÃHâ€šÂ·â€šÃ©Ë†â€”â€šÃ°â€˜â€šÂ­BÆ’GÆ’tÆ’FÆ’NÆ’gâ€šÃŒÃªâ€¡â€šÃAudioÆ’f[Æ’^AÆ’CÆ’â€œÆ’XÆ’gÆ’DÆ’â€¹Æ’Æ’â€œÆ’gâ€šÃMIDIÆ’f[Æ’^â€šÃ°Å½Ã³â€šÂ¯Å½Ã¦â€šÃ©
     void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
 
     //==============================================================================
