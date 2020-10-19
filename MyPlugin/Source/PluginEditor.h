@@ -16,7 +16,7 @@
 //==============================================================================
 /**
 */
-class MyPluginAudioProcessorEditor  : public AudioProcessorEditor
+class MyPluginAudioProcessorEditor  : public AudioProcessorEditor, private Button::Listener
 {
 public:
     MyPluginAudioProcessorEditor (MyPluginAudioProcessor&);
@@ -27,8 +27,12 @@ public:
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    void buttonClicked(Button* button) override;
+
+    TextButton sineWaveButton;
+    TextButton sampleSelectButton;
+    MidiKeyboardComponent keyboardComponent;
+
     MyPluginAudioProcessor& processor;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MyPluginAudioProcessorEditor)

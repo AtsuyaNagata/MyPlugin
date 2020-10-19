@@ -13,11 +13,18 @@
 
 //==============================================================================
 MyPluginAudioProcessorEditor::MyPluginAudioProcessorEditor (MyPluginAudioProcessor& p)
-    : AudioProcessorEditor (&p), processor (p)
+    : AudioProcessorEditor (&p), processor (p), keyboardComponent(p.getMidiKeybordState(), MidiKeyboardComponent::horizontalKeyboard)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    sineWaveButton.setButtonText("Sine Wave");
+    sineWaveButton.addListener(this);
+    sampleSelectButton.setButtonText("Sample Select");
+    sampleSelectButton.addListener(this);
+    
+    addAndMakeVisible(sineWaveButton);
+    addAndMakeVisible(sampleSelectButton);
+    addAndMakeVisible(keyboardComponent);
+
+    setSize(800, 600);
 }
 
 MyPluginAudioProcessorEditor::~MyPluginAudioProcessorEditor()
@@ -29,14 +36,21 @@ void MyPluginAudioProcessorEditor::paint (Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
-
-    g.setColour (Colours::white);
-    g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), Justification::centred, 1);
 }
 
 void MyPluginAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+    sineWaveButton.setBoundsRelative(0.2, 0.2, 0.2, 0.2);
+    sampleSelectButton.setBoundsRelative(0.6, 0.2, 0.2, 0.2);
+    keyboardComponent.setBoundsRelative(0.0, 0.7, 1.0, 0.3);
+}
+
+void MyPluginAudioProcessorEditor::buttonClicked(Button* button)
+{
+    if (button == &sineWaveButton) {
+        processor.loadSineWave();
+    }
+    else if (button == &sampleSelectButton) {
+        processor.loadSampleFile();
+    }
 }

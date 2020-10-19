@@ -3,6 +3,9 @@
 <JUCERPROJECT id="AQJqg1" name="MyPlugin" projectType="audioplug" jucerVersion="5.4.5"
               pluginFormats="buildStandalone,buildVST3">
   <MAINGROUP id="f9Y88f" name="MyPlugin">
+    <GROUP id="{DF48222A-F019-F237-D13C-0B3C7CC165E6}" name="Resource">
+      <FILE id="GlijcL" name="sine.wav" compile="0" resource="1" file="Resource/sine.wav"/>
+    </GROUP>
     <GROUP id="{634EC19A-0081-5113-83AE-4B1131C2FD38}" name="Source">
       <FILE id="hhf7uk" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

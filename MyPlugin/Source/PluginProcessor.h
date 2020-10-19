@@ -56,7 +56,21 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+
+    //=======MyMember=======
+    void setupSampler(AudioFormatReader& newReader);    //load Sample Sound and init SamplerVoice Object
+    void loadSineWave();        //load Sine Wave from Binary Resource
+    void loadSampleFile();      //load Sample Sound from File Browser
+    MidiKeyboardState& getMidiKeybordState() { return keyboardState; }
+
+
+
 private:
+    Synthesiser synth;
+    MidiKeyboardState keyboardState;
+    bool isChanging;        //flag to decide to Skip process in processBlock
+
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MyPluginAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MyPluginAudioProcessor)
+
 };

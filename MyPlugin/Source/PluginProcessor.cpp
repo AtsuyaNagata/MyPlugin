@@ -92,19 +92,6 @@ void MyPluginAudioProcessor::changeProgramName (int index, const String& newName
 {
 }
 
-//==============================================================================
-void MyPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
-{
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
-}
-
-void MyPluginAudioProcessor::releaseResources()
-{
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
-}
-
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool MyPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
@@ -128,39 +115,6 @@ bool MyPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts)
   #endif
 }
 #endif
-
-void MyPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
-{
-    ScopedNoDenormals noDenormals;
-
-    //“ü—Íƒ`ƒƒƒ“ƒlƒ‹”‚ÌŠl“¾
-    auto totalNumInputChannels = getTotalNumInputChannels();
-    //o—Íƒ`ƒƒƒ“ƒlƒ‹”‚ÌŠl“¾
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    //Žg—p‚µ‚È‚¢ƒ`ƒƒƒ“ƒlƒ‹‚Ìƒoƒbƒtƒ@‚ðƒNƒŠƒA‚·‚éˆ—iŽg—p‚µ‚È‚¢ƒ`ƒƒƒ“ƒlƒ‹‚ÍInput‚æ‚è‚à‚Í‚Ýo‚½•ª‚ÌOutputj
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear(i, 0, buffer.getNumSamples());
-
-    float level = 0.5f;     //‰¹—Ê‚ÌƒŒƒxƒ‹‚ð—\‚ß‰º‚°‚Ä‚¨‚­Ž–‚ð‘z’è‚µ‚Ä”{—¦‚ðÝ’è‚µ‚Ä‚¨‚­
-
-    //“ü—Íƒ`ƒƒƒ“ƒlƒ‹‚Ì”‚¾‚¯M†ˆ—‚ðŒJ‚è•Ô‚·B¡‰ñ‚Í“Á‚É‰½‚à‚µ‚È‚¢
-    for (int channel = 0; channel < totalNumInputChannels; ++channel) {
-        float* channelData = buffer.getWritePointer(channel);       //Žw’è‚µ‚½ƒ`ƒƒƒ“ƒlƒ‹‚Ìƒoƒbƒtƒ@‚Ìæ“ª‚ÌŽQÆ‚ð‚à‚ç‚Á‚Ä‚é
-    }
-
-    //o—Íƒ`ƒƒƒ“ƒlƒ‹‚Ì”‚¾‚¯M†ˆ—‚ðŒJ‚è•Ô‚·
-    for (int channel = 0; channel < totalNumOutputChannels; ++channel) {
-        //‘Î‰ž‚·‚éƒ`ƒƒƒ“ƒlƒ‹‚Ì1ƒ`ƒƒƒ“ƒlƒ‹•ª‚Ìƒoƒbƒtƒ@‚Ìæ“ªƒAƒhƒŒƒX‚ÌŠl“¾
-        float* channelData = buffer.getWritePointer(channel);
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
-            //Å‘åƒTƒ“ƒvƒ‹‚ÅˆêŽü‚·‚é—l‚ÉŠp“x‚ðŒvŽZ
-            const float currentAngle = juce::MathConstants<float>::pi * 2.0f * sample / buffer.getNumSamples();
-            //sin”g‚ÌŠÖ”‚ÉŒvŽZ‚µ‚½Šp“x‚ð“ü‚ê‚ÄA•Ô‚è’l‚ðfloat”z—ñ‚ÉŠi”[‚·‚é
-            channelData[sample] = sinf(currentAngle) * level;
-        }
-    }
-}
 
 //==============================================================================
 bool MyPluginAudioProcessor::hasEditor() const
@@ -192,4 +146,96 @@ void MyPluginAudioProcessor::setStateInformation (const void* data, int sizeInBy
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new MyPluginAudioProcessor();
+}
+
+
+//MyMemberProcess
+void MyPluginAudioProcessor::setupSampler(AudioFormatReader& newReader)
+{
+    isChanging = true;      //skip flag in processBlock()
+    
+    //delete synth object
+    synth.clearSounds();
+    synth.clearVoices();
+
+    BigInteger allNotes;
+    allNotes.setRange(0, 128, true);     //assign Note "true" (Range : 0 - 127)
+
+    synth.addSound(new SamplerSound("default", newReader, allNotes, 60, 0, 0.1, 10));
+
+    //add SamplerVoice Object 128 times for play 128 Sounds in same time
+    for (int i = 0; i < 128; ++i) {
+        synth.addVoice(new SamplerVoice());
+    }
+
+    isChanging = false;
+}
+
+void MyPluginAudioProcessor::loadSineWave()
+{
+    AudioFormatManager formatManager;
+    formatManager.registerBasicFormats();
+
+    //create MemoryInputStream instance from sine_wave BinaryData
+    MemoryInputStream* inputStream = new MemoryInputStream(BinaryData::sine_wav, BinaryData::sine_wavSize, true);
+    //create AudioFormatReader instance
+    AudioFormatReader* reader = formatManager.createReaderFor(inputStream);
+
+    if (reader != nullptr)
+    {
+        setupSampler(*reader);
+        delete reader;
+    }
+}
+
+void MyPluginAudioProcessor::loadSampleFile()
+{
+    AudioFormatManager formatManager;
+    formatManager.registerBasicFormats();
+
+    FileChooser chooser("Open audio file to play", File(), formatManager.getWildcardForAllFormats());
+
+    if (chooser.browseForFileToOpen())
+    {
+        File file(chooser.getResult());
+        AudioFormatReader* reader = formatManager.createReaderFor(file);
+
+        if (reader != nullptr)
+        {
+            setupSampler(*reader);
+            delete reader;
+        }
+    }
+}
+
+//This process is executed when initialize
+void MyPluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
+{
+    synth.setCurrentPlaybackSampleRate(sampleRate);     //set SampleRate on Synth
+    keyboardState.reset();      //initialize Midikeyboard Object
+}
+
+//This process is executed when delete
+void  MyPluginAudioProcessor::releaseResources()
+{
+    keyboardState.allNotesOff(0);           //set 0 to set NoteOff all channel
+    keyboardState.reset();
+}
+
+void  MyPluginAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
+{
+    if (isChanging) { return; }
+
+    ScopedNoDenormals noDenormals;
+    int totalNumInputChannel = getTotalNumInputChannels();
+    int totalNumOutChannels = getTotalNumOutputChannels();
+
+    keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), true);
+
+    for (auto i = totalNumInputChannel; i < totalNumOutChannels; ++i)
+    {
+        buffer.clear();
+    }
+
+    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
